@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>I'm sorry 🌸</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #FFF8F3;
+    --rose: #E8B4B8;
+    --rose-deep: #D98E94;
+    --plum: #4A2545;
+    --gold: #D4A857;
+    --sage: #8B9D83;
+    --paper-shadow: 0 20px 60px -10px rgba(74, 37, 69, 0.25);
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body {
+    font-family: 'Quicksand', sans-serif;
+    background: linear-gradient(160deg, var(--cream) 0%, #FBE9E7 45%, var(--rose) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    color: var(--plum);
+  }
+
+  /* floating petals */
+  .petal {
+    position: fixed;
+    top: -10%;
+    font-size: 1.4rem;
+    opacity: 0.5;
+    pointer-events: none;
+    animation: fall linear infinite;
+    z-index: 0;
+    user-select: none;
+  }
+
+  @keyframes fall {
+    to {
+      transform: translateY(110vh) rotate(360deg);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .petal { animation: none; display: none; }
+  }
+
+  .stage {
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  .card {
+    background: #ffffff;
+    border-radius: 28px;
+    padding: 56px 48px 64px;
+    max-width: 440px;
+    width: 100%;
+    text-align: center;
+    box-shadow: var(--paper-shadow);
+    position: relative;
+    z-index: 1;
+    border: 1px solid rgba(74, 37, 69, 0.06);
+    transition: transform 0.4s ease;
+  }
+
+  .eyebrow {
+    font-size: 0.78rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--rose-deep);
+    font-weight: 700;
+    margin-bottom: 14px;
+  }
+
+  h1 {
+    font-family: 'Caveat', cursive;
+    font-size: 3.4rem;
+    line-height: 1.05;
+    margin: 0 0 8px;
+    color: var(--plum);
+    font-weight: 700;
+  }
+
+  .sub {
+    font-size: 1.02rem;
+    line-height: 1.55;
+    color: #6b5466;
+    margin: 0 0 38px;
+    font-weight: 500;
+  }
+
+  .btn-row {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    min-height: 64px;
+  }
+
+  /* noBtn is a placeholder/spacer in the flex flow — it reserves the visual
+     gap next to Yes, but the actual button is always position:fixed so it
+     never has to jump between two different layout systems. */
+  .no-btn-spacer {
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  button {
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 700;
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.3s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  #yesBtn {
+    background: linear-gradient(135deg, var(--sage), #7a8d72);
+    color: #fff;
+    font-size: 1.05rem;
+    padding: 16px 34px;
+    box-shadow: 0 10px 24px -6px rgba(139, 157, 131, 0.55);
+    z-index: 2;
+  }
+
+  #yesBtn:hover {
+    transform: translateY(-2px) scale(1.03);
+  }
+
+  #noBtn {
+    background: var(--cream);
+    color: var(--plum);
+    font-size: 1.05rem;
+    padding: 16px 34px;
+    border: 2px solid rgba(74,37,69,0.12);
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 40;
+    transition: top 0.25s ease, left 0.25s ease, transform 0.25s ease, font-size 0.2s ease, padding 0.2s ease;
+    white-space: nowrap;
+    visibility: hidden; /* shown by JS once its real starting position is calculated */
+  }
+
+  .note {
+    margin-top: 26px;
+    font-size: 0.85rem;
+    color: #b08a93;
+    font-style: italic;
+    min-height: 1.2em;
+    transition: opacity 0.3s ease;
+  }
+
+  /* ---- success state ---- */
+  .success-card {
+    display: none;
+  }
+
+  .card.flipped .ask-card {
+    display: none;
+  }
+  .card.flipped .success-card {
+    display: block;
+  }
+
+  .success-card h1 {
+    font-size: 3rem;
+  }
+
+  .success-card .sub {
+    margin-bottom: 28px;
+  }
+
+  .letter {
+    background: var(--cream);
+    border-radius: 16px;
+    padding: 22px 22px 20px;
+    text-align: left;
+    font-size: 1rem;
+    line-height: 1.65;
+    color: #5a4456;
+    border: 1px dashed rgba(212, 168, 87, 0.6);
+    margin-bottom: 30px;
+  }
+
+  .letter p { margin: 0 0 12px; }
+  .letter p:last-child { margin-bottom: 0; }
+  .signoff { font-family: 'Caveat', cursive; font-size: 1.5rem; color: var(--plum); }
+
+  .unblock-btn {
+    background: linear-gradient(135deg, var(--gold), #c2933f);
+    color: #fff;
+    font-size: 1.05rem;
+    padding: 16px 30px;
+    width: 100%;
+    box-shadow: 0 10px 24px -6px rgba(212, 168, 87, 0.55);
+  }
+
+  .unblock-btn:hover {
+    transform: translateY(-2px) scale(1.02);
+  }
+
+  .unblock-btn.done {
+    background: linear-gradient(135deg, var(--sage), #7a8d72);
+    cursor: default;
+  }
+  .unblock-btn.done:hover { transform: none; }
+
+  .fallback-note {
+    margin-top: 14px;
+    font-size: 0.82rem;
+    color: #b08a93;
+    min-height: 1.1em;
+  }
+
+  footer {
+    position: fixed;
+    bottom: 14px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 0.75rem;
+    color: rgba(74, 37, 69, 0.35);
+    z-index: 1;
+  }
+
+  @media (max-width: 480px) {
+    .card { padding: 44px 26px 52px; border-radius: 22px; }
+    h1 { font-size: 2.7rem; }
+    .btn-row { flex-wrap: wrap; gap: 14px; }
+    #yesBtn, #noBtn { min-height: 48px; }
+  }
+
+  /* ---- activity toast ---- */
+  .toast-stack {
+    position: fixed;
+    top: 22px;
+    right: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 50;
+    max-width: 280px;
+  }
+
+  .toast {
+    background: rgba(255, 255, 255, 0.96);
+    border-radius: 14px;
+    padding: 12px 16px;
+    font-size: 0.86rem;
+    font-weight: 600;
+    color: var(--plum);
+    box-shadow: 0 10px 30px -8px rgba(74, 37, 69, 0.3);
+    border-left: 4px solid var(--rose-deep);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    animation: toastIn 0.35s ease, toastOut 0.4s ease 2.6s forwards;
+    backdrop-filter: blur(4px);
+  }
+
+  .toast.yes { border-left-color: var(--sage); }
+  .toast .emoji { font-size: 1.1rem; }
+
+  @keyframes toastIn {
+    from { opacity: 0; transform: translateX(30px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes toastOut {
+    to { opacity: 0; transform: translateX(30px); }
+  }
+
+  @media (max-width: 480px) {
+    .toast-stack { top: 12px; right: 12px; left: 12px; max-width: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toast-stack" id="toastStack"></div>
+
+<div class="stage" id="stage">
+  <div class="card" id="card">
+
+    <div class="ask-card">
+      <div class="eyebrow">For the love of my life</div>
+      <h1>I'm sorry, my love. 🥺</h1>
+      <p class="sub">You mean the world to me, and I hate that I made you feel otherwise.<br>Can my heart have one more chance?</p>
+
+      <div class="btn-row" id="btnRow">
+        <button id="yesBtn" onclick="sayYes()">Yes, always 💛</button>
+        <button class="no-btn-spacer" id="noBtnSpacer" tabindex="-1" aria-hidden="true">No</button>
+      </div>
+      <button id="noBtn" type="button">No</button>
+
+      <div class="note" id="note">&nbsp;</div>
+    </div>
+
+    <div class="success-card">
+      <div class="eyebrow">My heart, right now 😭🤍</div>
+      <h1>Thank you, love.</h1>
+      <p class="sub">You just made my whole world feel okay again.</p>
+
+      <div class="letter">
+        <p>Hey, it's me. I really am sorry — not the "sorry so we can move on" kind, the kind where I actually sat with how much I hurt you. I should've been better, and I'm going to be, for you.</p>
+        <p>I miss your voice, your laugh, just being near you. Could you unblock me, just so I can hold you and say the rest of this properly — not through a screen? I promise to listen, really listen, this time.</p>
+        <p class="signoff">— Yours, always and completely 🌸</p>
+      </div>
+
+      <button class="unblock-btn" id="unblockBtn" onclick="confirmUnblock()">I'll unblock you 💌</button>
+      <p class="fallback-note" id="fallbackNote">&nbsp;</p>
+    </div>
+
+  </div>
+</div>
+
+<footer>made with way too many feelings 🌷</footer>
+
+<script>
+  // floating petals background
+  const petals = ['🌸','💐','🌷','✨'];
+  const stage = document.getElementById('stage');
+  for (let i = 0; i < 14; i++) {
+    const p = document.createElement('div');
+    p.className = 'petal';
+    p.textContent = petals[Math.floor(Math.random() * petals.length)];
+    p.style.left = Math.random() * 100 + 'vw';
+    p.style.animationDuration = (8 + Math.random() * 10) + 's';
+    p.style.animationDelay = (Math.random() * 10) + 's';
+    p.style.fontSize = (1 + Math.random() * 1.2) + 'rem';
+    document.body.appendChild(p);
+  }
+
+  // ---- EMAIL NOTIFICATIONS (sent to you) ----
+  // 1. Go to https://formspree.io and create a free account using your email.
+  // 2. Create a new form — it gives you an endpoint like https://formspree.io/f/abcd1234
+  // 3. Paste it below, replacing YOUR_FORM_ID.
+  const FORMSPREE_ENDPOINT = "https://formspree.io/f/meebkwwb";
+
+  function notifyOwner(action, extra) {
+    if (FORMSPREE_ENDPOINT.includes("meebkwwb")) {
+      console.log("[notify skipped — set FORMSPREE_ENDPOINT]", action, extra);
+      return;
+    }
+    fetch(FORMSPREE_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Accept": "application/json" },
+      body: JSON.stringify({
+        action: action,
+        detail: extra || "",
+        time: new Date().toLocaleString(),
+        page: "I'm Sorry page"
+      })
+    }).catch(() => { /* fail silently, never block her experience */ });
+  }
+
+  const noBtn = document.getElementById('noBtn');
+  const noBtnSpacer = document.getElementById('noBtnSpacer');
+  const yesBtn = document.getElementById('yesBtn');
+  const btnRow = document.getElementById('btnRow');
+  const note = document.getElementById('note');
+  const toastStack = document.getElementById('toastStack');
+  let dodgeCount = 0;
+
+  // place the real (fixed-position) noBtn exactly where its invisible spacer
+  // sits, then reveal it — this gives it one consistent positioning system
+  // from the very first frame, so it never has to "jump" layout modes later
+  // (that jump was the cause of it occasionally vanishing).
+  function placeAtSpacer() {
+    const rect = noBtnSpacer.getBoundingClientRect();
+    noBtn.style.left = rect.left + 'px';
+    noBtn.style.top = rect.top + 'px';
+    noBtn.style.visibility = 'visible';
+  }
+
+  placeAtSpacer();
+  window.addEventListener('load', placeAtSpacer);
+  // re-sync once fonts finish loading, since font swap can shift layout
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(() => {
+      if (dodgeCount === 0) placeAtSpacer();
+    });
+  }
+
+
+  function showToast(text, emoji, type) {
+    const t = document.createElement('div');
+    t.className = 'toast' + (type === 'yes' ? ' yes' : '');
+    t.innerHTML = `<span class="emoji">${emoji}</span><span>${text}</span>`;
+    toastStack.appendChild(t);
+    setTimeout(() => t.remove(), 3100);
+  }
+
+  const messages = [
+    "nope, try again 😄",
+    "almost! ...not really",
+    "the no button is shy",
+    "it ran away again 🏃‍♀️",
+    "yes is right there though",
+    "c'mon, you know you want to 💛",
+    "the no button has commitment issues",
+    "okay but yes is so much easier"
+  ];
+  const MIN_SCALE = 0.78; // never shrink No into nothing
+  const MAX_GROW = 1.3;   // cap how big Yes gets
+
+  function randomPosition() {
+    const btnW = noBtn.offsetWidth || 100;
+    const btnH = noBtn.offsetHeight || 50;
+    const margin = 16;
+    // use visualViewport when available — more reliable on mobile when browser
+    // chrome / keyboard show or hide, since window.innerHeight can lag behind
+    const vw = (window.visualViewport && window.visualViewport.width) || window.innerWidth;
+    const vh = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
+    // clamp so the button is always fully visible, on any screen size
+    const maxX = Math.max(margin, vw - btnW - margin);
+    const maxY = Math.max(margin, vh - btnH - margin);
+    const x = margin + Math.random() * (maxX - margin);
+    const y = margin + Math.random() * (maxY - margin);
+    return { x, y };
+  }
+
+  function dodge() {
+    dodgeCount++;
+    const { x, y } = randomPosition();
+
+    noBtn.style.left = x + 'px';
+    noBtn.style.top = y + 'px';
+    noBtn.style.transform = `rotate(${(Math.random() * 24 - 12).toFixed(1)}deg)`;
+
+    note.textContent = messages[Math.min(dodgeCount - 1, messages.length - 1)];
+
+    showToast(
+      dodgeCount === 1 ? "She's reaching for No... 👀" : "Still trying to find No 😂",
+      dodgeCount === 1 ? "🙈" : "🏃‍♀️",
+      "no"
+    );
+    notifyOwner("Tried to click NO", `Attempt #${dodgeCount}`);
+
+    // grow Yes a little, gently, with a cap
+    const growScale = Math.min(1 + dodgeCount * 0.035, MAX_GROW);
+    yesBtn.style.transform = `scale(${growScale})`;
+
+    // shrink No slightly too, but never below MIN_SCALE
+    const shrinkScale = Math.max(1 - dodgeCount * 0.025, MIN_SCALE);
+    noBtn.style.fontSize = (1.05 * shrinkScale) + 'rem';
+    noBtn.style.padding = (16 * shrinkScale) + 'px ' + (34 * shrinkScale) + 'px';
+  }
+
+  // No truly cannot be clicked: dodge on hover AND on any attempt to press it.
+  // A short cooldown stops one real tap from firing dodge() multiple times
+  // (touchstart + pointerdown + click can all fire for a single finger tap).
+  let lastDodgeTime = 0;
+  function dodgeOnce(e) {
+    if (e) e.preventDefault();
+    const now = Date.now();
+    if (now - lastDodgeTime < 200) return;
+    lastDodgeTime = now;
+    dodge();
+  }
+
+  noBtn.addEventListener('mouseenter', dodgeOnce);
+  noBtn.addEventListener('pointerdown', dodgeOnce);
+  noBtn.addEventListener('touchstart', dodgeOnce, { passive: false });
+  // belt-and-suspenders: if a click somehow still fires, just dodge again, never act on it
+  noBtn.addEventListener('click', dodgeOnce);
+
+  // keep the button on-screen if the window is resized (debounced —
+  // mobile browsers fire many resize events while their chrome animates)
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      if (dodgeCount > 0) {
+        dodge();
+      } else {
+        placeAtSpacer();
+      }
+    }, 150);
+  });
+
+  function sayYes() {
+    showToast("She said YES 💛", "💍", "yes");
+    notifyOwner("She said YES", "She forgave you 💛");
+    document.getElementById('card').classList.add('flipped');
+  }
+
+  function confirmUnblock() {
+    const btn = document.getElementById('unblockBtn');
+    const tip = document.getElementById('fallbackNote');
+    btn.textContent = "Opening your contact card... 📲";
+    btn.classList.add('done');
+    showToast("She promised to unblock 🌷", "📨", "yes");
+    notifyOwner("She tapped Unblock", "Contact card was offered");
+    downloadContactCard();
+    tip.textContent = "If it didn't open automatically, check your downloads or the new tab to add the contact 💛";
+  }
+
+  // ---- CONTACT CARD (.vcf) ----
+  // Edit the placeholder name/number below before sending this page.
+  function downloadContactCard() {
+    const NAME = "Husband";
+    const PHONE = "+01948405024";
+    const vcard = [
+      "BEGIN:VCARD",
+      "VERSION:3.0",
+      `FN:${NAME}`,
+      `TEL;TYPE=CELL:${PHONE}`,
+      "NOTE:I'm sorry. Please call or text me 💛",
+      "END:VCARD"
+    ].join("\r\n");
+
+    const blob = new Blob([vcard], { type: "text/vcard;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const filename = NAME.replace(/\s+/g, "_") + ".vcf";
+
+    const ua = navigator.userAgent || "";
+    const isIOS = /iPad|iPhone|iPod/.test(ua) || (ua.includes("Macintosh") && navigator.maxTouchPoints > 1);
+
+    if (isIOS) {
+      // iOS Safari ignores the download attribute for vcf — opening it directly
+      // is what triggers the native "Add Contact" sheet.
+      window.location.href = url;
+    } else {
+      // Android Chrome and desktop browsers handle a normal download link fine,
+      // and Android will offer "Add to contacts" once the file is opened.
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+  }
+</script>
+
+</body>
+</html>
