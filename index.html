@@ -361,7 +361,7 @@
   const FORMSPREE_ENDPOINT = "https://formspree.io/f/meebkwwb";
 
   function notifyOwner(action, extra) {
-    if (FORMSPREE_ENDPOINT.includes("meebkwwb")) {
+    if (FORMSPREE_ENDPOINT.includes("YOUR_FORM_ID")) {
       console.log("[notify skipped — set FORMSPREE_ENDPOINT]", action, extra);
       return;
     }
